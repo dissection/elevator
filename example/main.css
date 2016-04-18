@@ -1,0 +1,31 @@
+.w{
+    width: 1200px;
+    margin: 0 auto;
+}
+.floor{
+    height: 600px;
+    background-color: #666666;
+    margin: 20px 0;
+    color: #fff;
+    font-size: 30px;
+    line-height: 300px;
+    text-align: center;
+    position: relative;
+}
+.elevator{
+    width: 40px;
+    position: absolute;
+    top: 0;
+    left:-50px;
+    text-align: center;
+}
+.elevator li{
+    cursor: pointer;
+    height: 26px;
+    line-height: 26px;
+    border-bottom: 1px solid #333;
+}
+.elevator li.hover{
+    background-color: #f00;
+    color: #fff;
+}

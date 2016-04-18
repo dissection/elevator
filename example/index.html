@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>楼层</title>
+    <link href="../base.css" rel="stylesheet">
+    <link href="main.css" rel="stylesheet">
+    <script src="../jquery.js"></script>
+    <script src="../jQuery.elevator.js"></script>
+</head>
+<body>
+    <div style=" height: 500px;">
+
+    </div>
+    <div class=" w">
+        <div class="mod-floor">
+            <div class="floor" data-fidx="0">0</div>
+            <div class="floor" data-fidx="1">1</div>
+            <div class="floor" data-fidx="2">2</div>
+            <div class="floor" data-fidx="3">3</div>
+            <div class="floor" data-fidx="4">4</div>
+            <div class="floor" data-fidx="5">5</div>
+        </div>
+        <div class="elevator">
+            <ul>
+                <li class="elevator-floor" data-fidx="0">0</li>
+                <li class="elevator-floor" data-fidx="1">1</li>
+                <li class="elevator-floor" data-fidx="2">2</li>
+                <li class="elevator-floor" data-fidx="3">3</li>
+                <li class="elevator-floor" data-fidx="4">4</li>
+                <li class="elevator-floor" data-fidx="5">5</li>
+            </ul>
+        </div>
+    </div>
+    <div style=" height: 500px;">
+
+    </div>
+<script>
+    $(function(){
+
+            $(".mod-floor ").elevator({
+                floorClass: "floor",
+                elevatorClass: "elevator",
+                elevatorItemClass:"elevator-floor",
+                left:-50
+            })
+
+    })
+</script>
+</body>
+</html>
