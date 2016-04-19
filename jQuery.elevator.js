@@ -1,49 +1,100 @@
 !function($,undefined){
+    // 筛选范围
+    function  floorscope(_floorList){
+        var floordata=[];
+        var _wh =  $(window).height();
+        var _scrollTop = $("body").scrollTop() || $("html").scrollTop();
+
+        var floorOffsetTop = 0;
+        var floorHeighht = 0;
+
+        var floorScrollTopHeighht=0;
+        var $floor = null;
+        var isMaxfloor =!1
+        return $.each(_floorList,function(){
+            if($floor = $(this),
+                floorOffsetTop = $floor.offset().top,
+                floorHeighht = $floor.outerHeight(),
+                floorScrollTopHeighht = floorOffsetTop + floorHeighht,
+                // 在屏幕的 范围内
+                floorScrollTopHeighht >  _scrollTop &&  _scrollTop+_wh > floorOffsetTop ){
+                var existClientHeighht = 0; // 存在 屏幕中 楼层的 高度
+                _scrollTop > floorOffsetTop && (existClientHeighht = floorScrollTopHeighht -_scrollTop),
+                _scrollTop < floorOffsetTop && _scrollTop+_wh > floorOffsetTop && (existClientHeighht = _scrollTop + _wh - floorOffsetTop),
+
+                    !isMaxfloor && existClientHeighht > _wh /3 && (isMaxfloor =  !0,
+                            existClientHeighht = 9999),
+                    floordata.push({
+                        floor: $floor,
+                        ch: existClientHeighht
+                    })
+
+            }
+        }),
+            floordata.length > 0 ? (floordata.sort(function(a,b){
+                return a.ch < b.ch ? -1 : 1
+            }),
+                floordata.pop().floor):null
+
+    }
+    // 处理 电梯面板 显示消失的函数
+    function  elevatorBox(t,b){
+
+    }
+
+    // 触发的 类
+    function triggerClass(a ,b, c){
+        a.removeClass(c),
+            b.addClass(c)
+    }
+
     var Elevator=function(element, options){
-        var _this = this, _op,florrArra=[];
-        _this.isScroll =!0;
-        _this.resizeTimer=null;
-        _this.resizeThread=null;
-        //_this.scrollTime=null;
+        var _this = this, _op;
+
+       /*参数值*/
         _this.init=!0;
+        _this.isScrolling =!1;  // 是否正在滚动
+
+        _this.scrolltimer = -1; //实例 触发 滚动  定时器容器
+        _this.resizetimer = -1; //实例 触发 浏览器大小改变 定时器容器
+
+
+        _this.scrollThread= -1;
+        _this.
+
+
+        //插件元素获取
         _this.el = $(element);
-        _this.options = $.extend({}, Elevator.DEFAULTS, options || {});
-        _this.floorList = _this.el.find("." + _this.options.floorClass);
-        _this.elevatorBox = $("." + _this.options.elevatorClass)
-        _this.elevatorItemClass = _this.elevatorBox.find("." + _this.options.elevatorItemClass);
+        _op=_this.options = $.extend({}, Elevator.DEFAULTS, options || {});
 
-        _this.floorLast=_this.floorList.eq(_this.floorList.length-1);
-        var _elevatorBoxGap = ($(window).height()- _this.elevatorBox.outerHeight())/2;
-        var _floorLastScrollTop=_this.floorLast.offset().top - ( _this.floorLast.outerHeight() - _this.elevatorBox.outerHeight() )-_elevatorBoxGap;
-        var _t =_this.el.offset().top+100;
-        var _scrollTop;
+        //获取楼成 列表
+        _this.floorList = _this.el.find("." +_op.floorClass);
+        // 电梯按钮 面板盒子
+        _this.elevatorBox = $("." + _op.elevatorClass);
+        // 电梯按钮
+        _this.handlers = _this.elevatorBox.find("." + _op.handlerClass);
 
-        _this.bind();
+        _this.install()
 
         $(window).bind("scroll", function() {
-            _scrollTop = $(this).scrollTop();
-
-            _this.watch(_t ,_scrollTop, _elevatorBoxGap ,_floorLastScrollTop);
-            clearTimeout(_this.resizeThread)
-            _this.resizeThread=setTimeout(function(){
-                if(_this.isScroll){
-                    _this.floorList.each(function (a) {
-                        if ($(this).offset().top < _scrollTop+ $(window).height()/2 && _scrollTop <= _floorLastScrollTop) {
-                            _this.itemclass(a)
-                        }else if(_scrollTop > _floorLastScrollTop){
-                            _this.itemclass(_this.floorList.length-1)
-                        }
-                    })
-                }
-
-            },200)
-
-        });
+            clearTimeout(_this.scrolltimer)
+            _this.scrolltimer = setTimeout(function(){
+                clearTimeout(_this.scrolltimer)
+                    _this.onScroll()
+            },50)
+        }),
+        $(window).bind("resize", function() {
+            clearTimeout(_this.resizetimer)
+            _this.resizetimer = setTimeout(function(){
+                clearTimeout(_this.resizetimer)
+                _this.onResize()
+            },50)
+        })
     };
     Elevator.DEFAULTS={
-        floorClass: "floor",
-        elevatorClass: "elevator",
-        elevatorItemClass: "elevator-list",
+        floorClass: "ui-floor",
+        elevatorClass: "ui-elevator",
+        handlerClass: "ui-handlers",
         selectClass: "hover",
         event: "click",
         space:10,
@@ -53,93 +104,35 @@
         effectSmooth: !0,
         threshold: "auto",
         floorScrollMargin: 0,
-        onStart: null ,
-        onEnd: null ,
+        dataIdex:"data-idx",
+        onStart: null ,   // 电梯启动
+        onEnd: null ,     // 电梯到终点
         onOut: null,
-        onResizeCallback:null
-    };
-    Elevator.prototype.watch=function(_t ,_scrollTop, _elevatorBoxGap ,_floorLastScrollTop){
-        var _this =this;
-        if(_t-_scrollTop <=_elevatorBoxGap  && _scrollTop <= _floorLastScrollTop){
-            if(_this.init){
-                _this.init=!1;
-                //console.log( _this.init)
-                _this.onResize(_elevatorBoxGap),_this.onScroll()
-            }
-        }else{
-            if(_scrollTop > _floorLastScrollTop){
-                _this.bottomScroll()
-            }else{
-                _this.itemclass(0);
-                _this.initScroll()
-            }
-
-        }
+        onResizeCallback:null  // 当 可视区 变化
     };
 
-
-    Elevator.prototype.bind=function(){
+    Elevator.prototype.install=function(){
         var _this=this,_op=this.options;
-        _this.elevatorItemClass.on("click",function(){
-            var i= $(this).index(),_t=    _this.floorList.eq(i).offset().top;
-
-            _this.isScroll=!1
-            _this.itemclass(i);
-            $("body").stop().animate({ scrollTop:_t },_op.speed, _op.easing,function(){
-                _this.isScroll=!0
-
+        _this.floorList.each(function(b){
+            $(this).attr(_op.dataIdex,b)
+        }),
+            _this.handlers.each(function(b){
+                $(this).attr(_op.dataIdex,b)
             })
 
-        })
+        _this.onScroll();
     };
-
-    // 给当前 电梯 按钮 点亮等
-    Elevator.prototype.itemclass=function(a){
-        this.elevatorItemClass.removeClass(this.options.selectClass);
-        this.elevatorItemClass.eq(a).addClass(this.options.selectClass)
-    };
-
     Elevator.prototype.onScroll=function(){
-        var _this=this;
-        $(window).bind("resize", function() {
-            _this.onResize( $(window).height()/2-_this.elevatorBox.outerHeight()/2);
-        });
+        var _this=this,_op=this.options;
+        _this.isScrolling || (_this.isScrolling = !0,
+        $.isFunction(_this.onStart) && _this.onStart()),
+            clearTimeout(_this.scrollThread),
+            _this.scrollThread = setTimeout(function(){
+                var isShowElevatorBox = !1; // 判断面板 是否显示
+
+            },200)
     };
 
-    Elevator.prototype.initScroll=function(){
-        var _this=this,_op=this.options;
-        $(window).unbind("resize");
-        _this.elevatorBox.css({
-            position: "absolute",
-            left: _op.left,
-            top:0
-        });
-        _this.init=!0
-    };
-    Elevator.prototype.bottomScroll=function(){
-        var _this=this,_op=this.options;
-        //console.log(_this.el.outerHeight()-_this.elevatorBox.outerHeight())
-        $(window).unbind("resize");
-        _this.elevatorBox.css({
-            position: "absolute",
-            left: _op.left,
-            top:_this.el.parent().outerHeight()-_this.elevatorBox.outerHeight()
-        });
-        _this.init=!0
-    };
-
-    Elevator.prototype.onResize=function(t){
-        var _this = this,_op=this.options;
-        _this.elevatorBox.css({
-            position:"fixed",
-            top:t,
-            left:_this.el.offset().left-_this.elevatorBox.outerWidth()-10
-        });
-        clearTimeout(_this.resizeTimer),
-            _this.resizeTimer = setTimeout(function() {
-                $.isFunction(_op.onResizeCallback) && _op.onResizeCallback.call(_this)
-            }, 200)
-    };
 
 
 
