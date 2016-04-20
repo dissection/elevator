@@ -6,10 +6,11 @@
     <link href="../base.css" rel="stylesheet">
     <link href="main.css" rel="stylesheet">
     <script src="../jquery.js"></script>
+    <script src="../jquery.easing.js"></script>
     <script src="../jQuery.elevator.js"></script>
 </head>
 <body>
-    <div style=" height: 500px;">
+    <div class="w" style=" height: 1200px; background-color: #333333">
 
     </div>
     <div class=" w">
@@ -32,17 +33,25 @@
             </ul>
         </div>
     </div>
-    <div style=" height: 500px;">
+    <div style=" height: 1200px;">
 
     </div>
 <script>
     $(function(){
+            $(".elevator").css({
+                left:$(".mod-floor").offset().left - 40,
+                top:$(window).height()/2-$(".elevator").height()/2
+            });
 
             $(".mod-floor ").elevator({
                 floorClass: "floor",
                 elevatorClass: "elevator",
-                elevatorItemClass:"elevator-floor",
-                left:-50
+                handlerClass:"elevator-floor",
+                easing: "easeOutCirc",
+                onStart:function(){
+                    console.log("onStart")
+                }
+
             })
 
     })
