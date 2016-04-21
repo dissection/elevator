@@ -35,7 +35,7 @@
             floordata.length > 0 ? (floordata.sort(function(a,b){
                 return a.ch < b.ch ? -1 : 1
             }),//如果 存在屏幕里面的 楼层只有
-             floordata.length == 1 && floordata[floordata.length-1].floor.attr(_this.options.dataIdex) == _floorList.length -1 &&  floordata[floordata.length-1].ch < _this.options.onOutDist ? null : floordata.pop().floor):null
+             floordata.length == 1 && floordata[floordata.length-1].floor.attr(_this.options.dataIdex) == _floorList.length -1 &&  floordata[floordata.length-1].ch < _this.options.onOutMargin ? null : floordata.pop().floor):null
 
     }
     // 处理 电梯面板 显示消失的函数
