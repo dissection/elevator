@@ -160,6 +160,7 @@
             })
         }
     };
+    Elevator.VERSION = '1.0.0';
     Elevator.DEFAULTS={
         floorClass: "ui-floor",
         elevatorClass: "ui-elevator",
