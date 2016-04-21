@@ -22,36 +22,31 @@
 
                 _scrollTop >= floorOffsetTop && (existClientHeighht = floorScrollTopHeighht -_scrollTop),
                 _scrollTop < floorOffsetTop && _scrollTop+_wh > floorOffsetTop && (existClientHeighht = _scrollTop + _wh - floorOffsetTop);
-              /*  console.log($(this));
-                console.log(floorOffsetTop)
-                console.log(_scrollTop);
-                console.log(existClientHeighht);*/
-                    !isMaxfloor && existClientHeighht > _wh /3 && (isMaxfloor =  !0,
-                            existClientHeighht = 9999),
+
+                   /* !isMaxfloor && existClientHeighht > _wh /3 && (isMaxfloor =  !0,
+                            existClientHeighht = 9999),*/
                     floordata.push({
                         floor: $floor,
                         ch: existClientHeighht
                     })
 
             }
-        }),console.log(floordata.length),console.log(floordata),
+        }),
             floordata.length > 0 ? (floordata.sort(function(a,b){
                 return a.ch < b.ch ? -1 : 1
-            }),console.log(floordata.floor),
-                floordata.floor[floordata.length-1].attr(_this.options.dataIdex) == _floorList.length -1 && floordata.floor[floordata.length-1].ch < 100 ? null : floordata.pop().floor  ):null
+            }),//如果 存在屏幕里面的 楼层只有
+             floordata.length == 1 && floordata[floordata.length-1].floor.attr(_this.options.dataIdex) == _floorList.length -1 &&  floordata[floordata.length-1].ch < _this.options.onOutDist ? null : floordata.pop().floor):null
 
     }
     // 处理 电梯面板 显示消失的函数
     function  elevatorBoxState(b, c){
-
-        if ("auto" == b.threshold){
-
+            var _op = b.options;
+        if ("auto" == _op.threshold){
             c ? b.elevatorBox.show() : b.elevatorBox.hide();
-        }
-        else if (null  != b.threshold) {
+        }else if (null  != _op.threshold) {
             var _scrollTop = $("body").scrollTop() || $("html").scrollTop();
-            var _threshold = b.threshold;
-            b.threshold instanceof $ && (_threshold = b.threshold.offset().top),
+            var _threshold = _op.threshold;
+            _op.threshold instanceof $ && (_threshold = _op.threshold.offset().top),
                 _threshold > _scrollTop ? b.elevatorBox.hide() : b.elevatorBox.show()
         }
     }
@@ -72,6 +67,12 @@
             })
     }
     //返回的对象包装
+    /**
+     * a: 电梯按钮
+     * b: 电梯所在楼层的位置
+     * c: 来自哪个楼层
+     * d: 当前楼层
+     * */
 
     function pack(a, b, c, d) {
         return {
@@ -95,12 +96,13 @@
         _this.resizeThread = -1;
 
         _this.currentIdx =  -1; //当前 楼层 的 index
+        _this.isPlay = !1;
 
         //插件元素获取
         _this.el = $(element);
         _op=_this.options = $.extend({}, Elevator.DEFAULTS, options || {});
         //传接过度
-        _this.threshold =_op.threshold;
+        //_this.threshold =_op.threshold;
         //获取楼成 列表
         _this.floorList = _this.el.find("." +_op.floorClass);
         // 电梯按钮 面板盒子
@@ -108,20 +110,20 @@
         // 电梯按钮
         _this.handlers = _this.elevatorBox.find("." + _op.handlerClass);
 
-        _this.install()
+        _this.install();
 
         $(window).bind("scroll", function() {
 
-            clearTimeout(_this.scrolltimer)
+            clearTimeout(_this.scrolltimer);
             _this.scrolltimer = setTimeout(function(){
-                clearTimeout(_this.scrolltimer)
+                clearTimeout(_this.scrolltimer);
                     _this.onScroll()
             },50)
         }),
         $(window).bind("resize", function() {
-            clearTimeout(_this.resizetimer)
+            clearTimeout(_this.resizetimer);
             _this.resizetimer = setTimeout(function(){
-                clearTimeout(_this.resizetimer)
+                clearTimeout(_this.resizetimer);
                 _this.onResize()
             },50)
         })
@@ -135,9 +137,11 @@
                 var _currentIdx = _this.currentIdx;
                 var floorPack = null;
                 clearTimeout(floorSlideTimer),
+                    _this.isPlay=!0,
                     _this.currentIdx = _idx,
                     floorPack = pack(_this.handlers, _this.floorList, _currentIdx, _idx),
                     $.isFunction(_op.onStart) && _op.onStart.call(_this , floorPack),
+                    _op.selectClass && triggerClass(_this.handlers, $this, _op.selectClass),
                     floorSlide({
                         top: $floor.offset().top + _op.floorScrollMargin,
                         delay: _op.delay,
@@ -145,9 +149,13 @@
                         effectSmooth: _op.effectSmooth
                     },function(){
                         $.isFunction(_op.onEnd) && _op.onEnd.call(_this, floorPack),
+                            floorSlideTimer = setTimeout(function(){
 
+                                _this.isPlay = !1
+                                //console.log(_this.isPlay)
+                            },100),
                             _this.elevatorBox.show()
-                    })
+                    }),
                 e.preventDefault()
             })
         }
@@ -156,16 +164,15 @@
         floorClass: "ui-floor",
         elevatorClass: "ui-elevator",
         handlerClass: "ui-handlers",
-        selectClass: "hover",
+        selectClass: null,
         event: "click",
-        space:10,
         delay: 300,
-        speed: 1200,
         easing: "swing" ,
         effectSmooth: !0,
         threshold: "auto",
         floorScrollMargin: 0,
         dataIdex:"data-idx",
+        onOutMargin:0,    //当离开最后 一个楼层时候
         onStart: null ,   // 电梯启动
         onEnd: null ,     // 电梯到终点
         onOut: null,
@@ -185,19 +192,20 @@
     };
     Elevator.prototype.onScroll=function(){
         var _this=this,_op=this.options;
-        _this.isScrolling || (_this.isScrolling = !0,
+        //console.log(_this.isPlay)
+        _this.isPlay || ( _this.isScrolling || (_this.isScrolling = !0,
         $.isFunction(_this.onStart) && _this.onStart()),
             clearTimeout(_this.scrollThread),
             _this.scrollThread = setTimeout(function(){
                 var isShowElevatorBox = !1; // 判断面板 是否显示
                 var floorSatet = floorscope(_this,_this.floorList)
-                console.log(floorSatet)
+                //console.log(floorSatet)
                 floorSatet && (isShowElevatorBox = !0,
                     $.isFunction(_this.onEnd) && _this.onEnd.call(_this,floorSatet)),
                     elevatorBoxState(_this , isShowElevatorBox),
-                    isShowElevatorBox || $.isFunction(_op.onOut) && _op.onOut.call(_this),
+                    isShowElevatorBox || $.isFunction(_this.onOut) && _this.onOut.call(_this),
                     _this.isScrolling = !1
-            },200)
+            },200))
     };
     Elevator.prototype.onResize =function(){
         var _this=this,_op=this.options;
@@ -205,21 +213,23 @@
             _this.resizeThread = setTimeout(function(){
                 $.isFunction(_op.onResizeCallback) && _op.onResizeCallback.call(_this)
             },200)
-    };
 
+    };
+    //滚动 开始
     Elevator.prototype.onStart=function (){
         var _this=this,_op=this.options;
         $.isFunction(_op.onStart) && _op.onStart.call(_this, pack(_this.handlers, _this.floorList ))
     };
+    //滚动结束
     Elevator.prototype.onEnd=function (d){
         var _this=this,_op=this.options;
         if (d) {
-            var _idx = d.attr("data-idx");
+            var _idx = d.attr(_op.dataIdex);
             var idxLast = _this.currentIdx; //上一次的 index
             if (_this.currentIdx = _idx,
                 _idx < _this.handlers.length && _idx > -1) {
 
-                var $handler = $(_this.handlers.filter("[data-idx=" + _idx + "]"));
+                var $handler = $(_this.handlers.filter("["+_op.dataIdex+"=" + _idx + "]"));
                 if (!$handler || $handler.length < 1)
                     return !1;
                 triggerClass(_this.handlers, $handler, _op.selectClass),
@@ -227,8 +237,12 @@
             }
         }
     };
+    //当 elevatorBox 消失的情况, 已经 离开楼层块的时候 触发
     Elevator.prototype.onOut=function (){
+        var _this=this,_op=this.options;
 
+        _op.selectClass && _this.handlers.removeClass(_op.selectClass),
+        $.isFunction(_op.onOut) && _op.onOut.call(_this, _this.elevatorBox)
     };
 
     // Dropdown plugin definition

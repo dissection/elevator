@@ -21,6 +21,11 @@
             <div class="floor" >3</div>
             <div class="floor" >4</div>
             <div class="floor" >5</div>
+            <div class="floor" >6</div>
+            <div class="floor" >7</div>
+            <div class="floor" >8</div>
+            <div class="floor" >9</div>
+
         </div>
         <div class="elevator">
             <ul>
@@ -30,6 +35,11 @@
                 <li class="elevator-floor" >3</li>
                 <li class="elevator-floor" >4</li>
                 <li class="elevator-floor" >5</li>
+                <li class="elevator-floor" >6</li>
+                <li class="elevator-floor">7</li>
+                <li class="elevator-floor">8</li>
+                <li class="elevator-floor" >9</li>
+
             </ul>
         </div>
     </div>
@@ -38,18 +48,30 @@
     </div>
 <script>
     $(function(){
-            $(".elevator").css({
-                left:$(".mod-floor").offset().left - 40,
+        var $elevator= $(".elevator");
+        function  elevatorFixed(d , b){
+            d.css({
+                left:b.offset().left - 40,
                 top:$(window).height()/2-$(".elevator").height()/2
             });
+        }
+
+         elevatorFixed($elevator,$(".mod-floor"))
+
 
             $(".mod-floor ").elevator({
                 floorClass: "floor",
                 elevatorClass: "elevator",
                 handlerClass:"elevator-floor",
-                easing: "easeOutCirc",
-                onStart:function(){
+                selectClass:"hover",
+                delay: 1200,
+                onOutMargin:500,
+//                threshold:100,
+               /* onStart:function(){
                     console.log("onStart")
+                },*/
+                onResizeCallback:function(t){
+                    elevatorFixed($elevator,$(".mod-floor"))
                 }
 
             })
