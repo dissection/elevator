@@ -7,7 +7,8 @@
     <link href="main.css" rel="stylesheet">
     <script src="../jquery.js"></script>
     <script src="../jquery.easing.js"></script>
-    <script src="../jQuery.elevator.js"></script>
+    <script src="../src/elevator.min.js"></script>
+    <!--<script src="../jQuery.elevator.js"></script>-->
 </head>
 <body>
     <div class="w" style=" height: 1200px; background-color: #333333">
@@ -67,9 +68,14 @@
                 delay: 1200,
                 onOutMargin:500,
 //                threshold:100,
-               /* onStart:function(){
+                onStart:function(a){
                     console.log("onStart")
-                },*/
+                    console.log(a)
+                },
+                onEnd:function (a) {
+                    console.log("onEnd")
+                    console.log(a)
+                },
                 onResizeCallback:function(t){
                     elevatorFixed($elevator,$(".mod-floor"))
                 }

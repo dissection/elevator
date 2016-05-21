@@ -75,6 +75,10 @@
      * */
 
     function pack(a, b, c, d) {
+       /* console.log(a)
+        console.log(b)
+        console.log(c)
+        console.log(d)*/
         return {
             handler: a[d],
             floor: b[d],
@@ -135,6 +139,7 @@
                 var _idx = $this.attr(_op.dataIdex);
                 var $floor = $(_this.floorList).eq(_idx);
                 var _currentIdx = _this.currentIdx;
+                console.log(_this.currentIdx)
                 var floorPack = null;
                 clearTimeout(floorSlideTimer),
                     _this.isPlay=!0,
@@ -219,7 +224,7 @@
     //滚动 开始
     Elevator.prototype.onStart=function (){
         var _this=this,_op=this.options;
-        $.isFunction(_op.onStart) && _op.onStart.call(_this, pack(_this.handlers, _this.floorList ))
+        $.isFunction(_op.onStart) && _op.onStart.call(_this, pack(_this.handlers, _this.floorList,_this.currentIdx ? _this.currentIdx : -1 ,-1 ))
     };
     //滚动结束
     Elevator.prototype.onEnd=function (d){
